@@ -22,17 +22,10 @@
         
         <!-- Variables de sesión -->
         <div class="mt-2">
-        
             <p class="small mb-0">
-                Nivel de experiencia: <strong>{{ session['profile']['experience_level'] }}</strong>
+                Preferencias: <strong>{{ session['profile']['favorite_movie_genres'] | join(', ') }}</strong>
             </p>
-            <p class="small mb-0">
-                Temas de interés: <strong>{{ session['profile']['topics_of_interest'] | join(', ') }}</strong>
-            </p>
-            <p class="small mb-0">
-                Compañía favorita: <strong>{{ session['profile']['company_favorite'] }}</strong>
-            </p>
-                </div>
+         </div>
     </div>
 </div>
 

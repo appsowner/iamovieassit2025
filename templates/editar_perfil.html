@@ -7,85 +7,34 @@
         
     <h2>Editar Perfil</h2>
     
-    <form method="POST">
-        <!-- Campo para el idioma -->
-        <div class="mb-3">
-            <label for="language" class="form-label">Idioma</label>
-            <select class="form-select" id="language" name="language" required>
-                <option value="es" {% if profile.language == 'es' %}selected{% endif %}>Español</option>
-                <option value="en" {% if profile.language == 'en' %}selected{% endif %}>Inglés</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="company_favorite" class="form-label">Empresa favorita</label>
-            <select class="form-select" id="company_favorite" name="company_favorite">
-                <option value="" {% if not profile.company_favorite %}selected{% endif %}>Selecciona una empresa</option>
-                {% for company in company_list %}
-                    <option value="{{ company }}" {% if profile.company_favorite == company %}selected{% endif %}>
-                        {{ company }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Campo para el nivel de experiencia -->
-        <div class="mb-3">
-            <label for="experience_level" class="form-label">Nivel de experiencia</label>
-            <select class="form-select" id="experience_level" name="experience_level" required>
-                <option value="Inversionista" {% if profile.experience_level == 'Inversionista' %}selected{% endif %}>Inversionista</option>
-                <option value="Analista de inversiones" {% if profile.experience_level == 'Analista de Inversiones' %}selected{% endif %}>Analista de Inversiones</option>
-                <option value="Gerente Inversiones" {% if profile.experience_level == 'Gerente Inversiones' %}selected{% endif %}>Gerente Inversiones</option>
-             </select>
-        </div>
-
-        <!-- Campo para los temas de interés -->
-        <div class="mb-3">
-            <label for="topics_of_interest" class="form-label">Temas de interés</label>
-            <input type="text" class="form-control" id="topics_of_interest" name="topics_of_interest" value="{{ profile.topics_of_interest | join(', ') }}" required />
-            <small class="form-text text-muted">Separa los temas por comas (ejemplo: seguros, rentabilidad, inversiones)</small>
-        </div>
-
-        <!-- Campo para seleccionar preferencias de reportes financieros -->
-        <div class="mb-3">
-            <label class="form-label">Reportes financieros preferidos</label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="report_rentability_12_months" name="report_rentability_12_months" {% if profile.report_rentability_12_months %}checked{% endif %}>
-                <label class="form-check-label" for="report_rentability_12_months">Rentabilidad 12 meses</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="report_evolution_utility_5_years" name="report_evolution_utility_5_years" {% if profile.report_evolution_utility_5_years %}checked{% endif %}>
-                <label class="form-check-label" for="report_evolution_utility_5_years">Evolución utilidad 5 años</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="report_industry_summary" name="report_industry_summary" {% if profile.report_industry_summary %}checked{% endif %}>
-                <label class="form-check-label" for="report_industry_summary">Resumen de la industria</label>
-            </div>
-        </div>
-
-        <!-- Campo para seleccionar indicadores -->
-        <div class="mb-3">
-            <label class="form-label">Indicadores preferidos</label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="indicator_roe" name="indicator_roe" {% if profile.indicator_roe %}checked{% endif %}>
-                <label class="form-check-label" for="indicator_roe">ROE (Return on Equity)</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="indicator_roa" name="indicator_roa" {% if profile.indicator_roa %}checked{% endif %}>
-                <label class="form-check-label" for="indicator_roa">ROA (Return on Assets)</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="indicator_leverage" name="indicator_leverage" {% if profile.indicator_leverage %}checked{% endif %}>
-                <label class="form-check-label" for="indicator_leverage">Leverage</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="indicator_sales" name="indicator_sales" {% if profile.indicator_sales %}checked{% endif %}>
-                <label class="form-check-label" for="indicator_sales">Ventas</label>
-            </div>
-        </div>
-
-        <!-- Botón para guardar los cambios -->
-        <button type="submit" class="btn btn-primary">Guardar cambios</button>
-    </form>
+    <form method="POST" action="{{ url_for('editar_perfil') }}">
+    <label class="form-label">Géneros de películas favoritos</label>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="genre_action" name="favorite_movie_genres" value="Acción" {% if "Acción" in profile.favorite_movie_genres %}checked{% endif %}>
+        <label class="form-check-label" for="genre_action">Acción</label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="genre_comedy" name="favorite_movie_genres" value="Comedia" {% if "Comedia" in profile.favorite_movie_genres %}checked{% endif %}>
+        <label class="form-check-label" for="genre_comedy">Comedia</label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="genre_drama" name="favorite_movie_genres" value="Drama" {% if "Drama" in profile.favorite_movie_genres %}checked{% endif %}>
+        <label class="form-check-label" for="genre_drama">Drama</label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="genre_horror" name="favorite_movie_genres" value="Terror" {% if "Terror" in profile.favorite_movie_genres %}checked{% endif %}>
+        <label class="form-check-label" for="genre_horror">Terror</label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="genre_scifi" name="favorite_movie_genres" value="Ciencia Ficción" {% if "Ciencia Ficción" in profile.favorite_movie_genres %}checked{% endif %}>
+        <label class="form-check-label" for="genre_scifi">Ciencia Ficción</label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="genre_romance" name="favorite_movie_genres" value="Romance" {% if "Romance" in profile.favorite_movie_genres %}checked{% endif %}>
+        <label class="form-check-label" for="genre_romance">Romance</label>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
+</form>
 
     <!-- Botones para ir al home o al chat -->
     <div class="mt-4">

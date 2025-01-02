@@ -56,20 +56,11 @@ def chat():
     intents = {}
 
     # Crear intents basados en los temas de interés del usuario
-    for topic in session["profile"]["topics_of_interest"]:
+    for topic in session["profile"]["favorite_movie_genres"]:
         intents[f"Quiero saber más sobre {topic}"] = f"Quiero saber más sobre {topic}"
 
     # Agregar un intent para enviar un mensaje
     intents["Enviar"] = request.form.get("message")
-
-    # Crear el contexto del perfil del usuario para pasarlo al modelo LLM
-    if "profile" in session:
-        profile_context = (
-            f"El usuario tiene un nivel de experiencia '{session['profile']['experience_level']}', "
-            f"está interesado en los temas '{', '.join(session['profile']['topics_of_interest'])}', "
-            f"y su compañía favorita es '{session['profile']['company_favorite']}'."
-        )
-    print(profile_context)
 
     if request.method == "GET":
         # Pasar los intents al template para que se muestren como botones
@@ -89,7 +80,7 @@ def chat():
         messages_for_llm = [
             {
                 "role": "system",
-                "content": profile_context,
+                "content": "recomendaciones de peliculas ",  # profile_context,
             }
         ]
 
@@ -163,13 +154,10 @@ def editar_perfil():
 
     if request.method == "POST":
         # Obtener los valores del formulario
-        favorite_movie_genres = request.form["favorite_movie_genres"].split(",")
+        selected_genres = request.form.getlist("favorite_movie_genres")
 
-        # Actualizar el perfil del usuario
-        profile.favorite_movie_genres = [
-            topic.strip() for topic in favorite_movie_genres
-        ]
-
+        # Actualizar el perfil del usuario con los géneros seleccionados
+        profile.favorite_movie_genres = selected_genres
         # Guardar los cambios en la base de datos
         db.session.commit()
 
