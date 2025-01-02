@@ -37,26 +37,10 @@ def login():
 
         # Cargar el perfil del usuario en la sesión
         profile = Profile.query.filter_by(user_id=session["user_id"]).first()
-        if email == "demo@iA MovieAssist.com" and password == "demo":
-            Profile.query.filter_by(user_id=session["user_id"]).first()
-            session["profile"] = {
-                "language": profile.language,
-                "topics_of_interest": profile.topics_of_interest,
-                "report_rentability_12_months": profile.report_rentability_12_months,
-                "report_evolution_utility_5_years": profile.report_evolution_utility_5_years,
-                "experience_level": profile.experience_level,
-                "company_favorite": profile.company_favorite,
-                "report_industry_summary": profile.report_industry_summary,
-                "indicator_roe": profile.indicator_roe,
-                "indicator_roa": profile.indicator_roa,
-                "indicator_leverage": profile.indicator_leverage,
-                "indicator_sales": profile.indicator_sales,
-            }
-            print(session)
-            return redirect("/chat")
-        else:
-            error = "Credenciales invalidas. Intenta nuevamente"
-    return render_template("index.html", error=error)
+        Profile.query.filter_by(user_id=session["user_id"]).first()
+        session["profile"] = {"favorite_movie_genres": profile.favorite_movie_genres}
+        print(session)
+    return redirect("/chat")
 
 
 @app.route("/chat", methods=["GET", "POST"])
@@ -66,19 +50,7 @@ def chat():
 
     # Cargar el perfil del usuario en la sesión
     profile = Profile.query.filter_by(user_id=session["user_id"]).first()
-    session["profile"] = {
-        "language": profile.language,
-        "topics_of_interest": profile.topics_of_interest,
-        "report_rentability_12_months": profile.report_rentability_12_months,
-        "report_evolution_utility_5_years": profile.report_evolution_utility_5_years,
-        "report_industry_summary": profile.report_industry_summary,
-        "experience_level": profile.experience_level,
-        "company_favorite": profile.company_favorite,
-        "indicator_roe": profile.indicator_roe,
-        "indicator_roa": profile.indicator_roa,
-        "indicator_leverage": profile.indicator_leverage,
-        "indicator_sales": profile.indicator_sales,
-    }
+    session["profile"] = {"favorite_movie_genres": profile.favorite_movie_genres}
 
     print(session["profile"])
     intents = {}
@@ -189,49 +161,14 @@ def editar_perfil():
     # Obtener el perfil del usuario (esto depende de tu implementación)
     profile = db.session.query(Profile).first()
 
-    # Leer el archivo Excel y obtener las empresas distintas
-    file_path = "data/fecu_cmf.xlsx"
-    df = pd.read_excel(file_path)
-    companies = df["Razónsocial"].dropna().unique()
-    company_list = companies.tolist()
-    print(company_list)
-
     if request.method == "POST":
         # Obtener los valores del formulario
-        language = request.form["language"]
-        experience_level = request.form["experience_level"]
-        company_favorite = request.form["company_favorite"]
-        topics_of_interest = request.form["topics_of_interest"].split(",")
-
-        # Obtener valores de reportes financieros
-        report_rentability_12_months = "report_rentability_12_months" in request.form
-        report_evolution_utility_5_years = (
-            "report_evolution_utility_5_years" in request.form
-        )
-        report_industry_summary = "report_industry_summary" in request.form
-
-        # Obtener valores de indicadores
-        indicator_roe = "indicator_roe" in request.form
-        indicator_roa = "indicator_roa" in request.form
-        indicator_leverage = "indicator_leverage" in request.form
-        indicator_sales = "indicator_sales" in request.form
+        favorite_movie_genres = request.form["favorite_movie_genres"].split(",")
 
         # Actualizar el perfil del usuario
-        profile.language = language
-        profile.company_favorite = company_favorite
-        profile.experience_level = experience_level
-        profile.topics_of_interest = [topic.strip() for topic in topics_of_interest]
-
-        # Actualizar los campos de reportes financieros
-        profile.report_rentability_12_months = report_rentability_12_months
-        profile.report_evolution_utility_5_years = report_evolution_utility_5_years
-        profile.report_industry_summary = report_industry_summary
-
-        # Actualizar los campos de indicadores
-        profile.indicator_roe = indicator_roe
-        profile.indicator_roa = indicator_roa
-        profile.indicator_leverage = indicator_leverage
-        profile.indicator_sales = indicator_sales
+        profile.favorite_movie_genres = [
+            topic.strip() for topic in favorite_movie_genres
+        ]
 
         # Guardar los cambios en la base de datos
         db.session.commit()
@@ -240,6 +177,4 @@ def editar_perfil():
         flash("Perfil actualizado con éxito", "success")
         return redirect(url_for("editar_perfil"))  # Redirigir a la página de perfil
 
-    return render_template(
-        "editar_perfil.html", profile=profile, company_list=company_list
-    )
+    return render_template("editar_perfil.html", profile=profile)
