@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    iA MovieAssist
+{% endblock %}
+
+{% block content %}
+<!-- Encabezado fijo -->
+<div class="fixed-top bg-primary text-white py-3 px-4" style="z-index: 1030;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h4 mb-0">Chat con iA MovieAssist</h1>
+            <div>
+                <button class="btn btn-light" onclick="window.location.href='{{ url_for('editar_perfil') }}'">
+                    Editar perfil
+                </button>
+                <button class="btn btn-light ms-2" onclick="window.location.href='{{ url_for('editar_perfil') }}'">
+                    Cerrar sesión
+                </button>
+            </div>
+        </div>
+        
+        <!-- Variables de sesión -->
+        <div class="mt-2">
+        
+            <p class="small mb-0">
+                Nivel de experiencia: <strong>{{ session['profile']['experience_level'] }}</strong>
+            </p>
+            <p class="small mb-0">
+                Temas de interés: <strong>{{ session['profile']['topics_of_interest'] | join(', ') }}</strong>
+            </p>
+            <p class="small mb-0">
+                Compañía favorita: <strong>{{ session['profile']['company_favorite'] }}</strong>
+            </p>
+                </div>
+    </div>
+</div>
+
+<!-- Contenedor para el chat -->
+<div class="container" style="margin-top: 140px; height: calc(100vh - 180px); overflow-y: auto;">
+    {% for message in messages %}
+        {% if message.author == 'assistant' %}
+        <!-- Mensaje del asistente -->
+        <div class="d-flex flex-row justify-content-start mb-4 text-primary">
+            <img class="bg-white" src="{{ url_for('static', filename='avatar.png') }}" alt="avatar 1" style="width: 60px; height: 60px; border-radius: 50%;">
+            <div class="p-3 ms-3 " style="border-radius: 15px; ">
+                <p class="small mb-0 ">{{ message.content }}</p>
+            </div>
+        </div>
+        {% else %}
+        <!-- Mensaje del usuario -->
+        <div class="d-flex flex-row justify-content-end mb-4">
+            <div class="p-3 me-3 border rounded-3 bg-light">
+                <p class="small mb-0">{{ message.content }}</p>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+  <!-- Botones para los intents con padding-top de 10px -->
+  <div class="d-flex flex-wrap mb-4 pt-2" style="padding-top: 10px;">
+    {% for intent, message in intents.items() %}
+        <!-- Cada botón es un formulario que envía el intent correspondiente -->
+        <form method="POST" class="me-2 mb-2">
+            <button class="btn btn-primary" type="submit" name="intent" value="{{ intent }}">
+                {{ intent }}
+            </button>
+        </form>
+    {% endfor %}
+</div>
+<!-- Formulario para enviar mensajes -->
+<form method="POST" class="mt-3">
+    <div class="input-group mb-3">
+        <input name="message" required="required" class="form-control alert alert-dismissible alert-info" 
+               placeholder="¿En qué te puedo ayudar, iA MovieAssist?" aria-label="Tu mensaje" />
+        <button type="submit" class="btn btn-primary" id="send-message" name="intent">Enviar</button>
+    </div>
+</form>
+
+</div>
+{% endblock %}
