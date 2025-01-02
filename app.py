@@ -69,7 +69,7 @@ def chat():
     # Procesar el intent si se envió uno
     intent = request.form.get("intent")
 
-    if intent in intents:
+    if intent and intent in intents:
         user_message = intents[intent]
 
         # Guardar nuevo mensaje en la base de datos
@@ -106,8 +106,8 @@ def chat():
         )
         db.session.commit()
 
-        # Renderizar la plantilla con los nuevos mensajes
-        return render_template("chat.html", messages=user.messages, intents=intents)
+    # Renderizar la plantilla con los nuevos mensajes
+    return render_template("chat.html", messages=user.messages, intents=intents)
 
 
 @app.post("/recommend")
@@ -166,3 +166,15 @@ def editar_perfil():
         return redirect(url_for("editar_perfil"))  # Redirigir a la página de perfil
 
     return render_template("editar_perfil.html", profile=profile)
+
+
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+    # Limpiar las variables de sesión
+    session.clear()
+
+    # Mensaje opcional para indicar que se cerró la sesión correctamente
+    flash("Sesión cerrada correctamente.", "info")
+
+    # Redirigir al usuario a la página de inicio de sesión
+    return redirect(url_for("login"))
