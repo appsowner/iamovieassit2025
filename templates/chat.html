@@ -42,18 +42,16 @@
           </div>
         {% endif %}
     {% endfor %}
-    <!-- Botones para los intents con padding-top de 10px -->
-  <div class="d-flex flex-wrap mb-4 pt-2" style="padding-top: 10px;">
-    {% for intent, message in intents.items() %}
-        <!-- Cada botón es un formulario que envía el intent correspondiente -->
-        <form method="POST" class="me-2 mb-2">
-            <button class="btn btn-primary" type="submit" name="intent" value="{{ intent }}">
-                {{ intent }}
-            </button>
-        </form>
-    {% endfor %}
-</div>
-
+    <!-- Mostrar los intents siempre -->
+    <div class="d-flex flex-wrap mb-4 pt-2" style="padding-top: 10px;">
+        {% for intent, message in intents.items() %}
+            <form method="POST" class="me-2 mb-2">
+                <button class="btn btn-primary" type="submit" name="intent" value="{{ intent }}">
+                    {{ intent }}
+                </button>
+            </form>
+        {% endfor %}
+    </div>
 
    <form method="POST">
         <div class="input-group mb-3">
