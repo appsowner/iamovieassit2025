@@ -34,12 +34,15 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
         session["user_id"] = 1
+        print("session")
+        print(session["user_id"])
 
         # Cargar el perfil del usuario en la sesión
         profile = Profile.query.filter_by(user_id=session["user_id"]).first()
         Profile.query.filter_by(user_id=session["user_id"]).first()
         session["profile"] = {"favorite_movie_genres": profile.favorite_movie_genres}
-        print(session)
+        print("session[profile]")
+        print(session["profile"])
     return redirect("/chat")
 
 
@@ -47,20 +50,30 @@ def login():
 def chat():
     # Obtener el usuario
     user = db.session.query(User).first()
-
+    print("session[user_id]  en chat")
+    print(session["user_id"])
     # Cargar el perfil del usuario en la sesión
     profile = Profile.query.filter_by(user_id=session["user_id"]).first()
     session["profile"] = {"favorite_movie_genres": profile.favorite_movie_genres}
-
-    print(session["profile"])
     intents = {}
 
     # Crear intents basados en los temas de interés del usuario
     for topic in session["profile"]["favorite_movie_genres"]:
         intents[f"Quiero saber más sobre {topic}"] = f"Quiero saber más sobre {topic}"
 
+    # Preparar el contexto para el modelo si hay géneros
+    if intents:
+        genres_text = ", ".join(session["profile"]["favorite_movie_genres"])
+        profile_context = (
+            f"Recomendar películas de los siguientes géneros: {genres_text}."
+        )
+    else:
+        profile_context = "Recomendaciones de películas."
+
     # Agregar un intent para enviar un mensaje
     intents["Enviar"] = request.form.get("message")
+    print("user.messages")
+    print(user.messages)
 
     if request.method == "GET":
         # Pasar los intents al template para que se muestren como botones
@@ -80,7 +93,7 @@ def chat():
         messages_for_llm = [
             {
                 "role": "system",
-                "content": "recomendaciones de peliculas ",  # profile_context,
+                "content": profile_context,
             }
         ]
 
@@ -122,7 +135,10 @@ def recommend():
     messages_for_llm = [
         {
             "role": "system",
-            "content": "Eres un chatbot que recomienda películas, te llamas 'Next Moby'. Tu rol es responder recomendaciones de manera breve y concisa. No repitas recomendaciones.",
+            "content": """
+            Eres un chatbot que recomienda películas, te llamas iA MovieAssist. 
+            Tu rol es responder recomendaciones de manera breve y concisa. No repitas recomendaciones.
+            """,
         }
     ]
 
