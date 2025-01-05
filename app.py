@@ -50,8 +50,6 @@ def login():
 def chat():
     # Obtener el usuario
     user = db.session.query(User).first()
-    print("session[user_id]  en chat")
-    print(session["user_id"])
     # Cargar el perfil del usuario en la sesión
     profile = Profile.query.filter_by(user_id=session["user_id"]).first()
     session["profile"] = {"favorite_movie_genres": profile.favorite_movie_genres}
@@ -64,16 +62,12 @@ def chat():
     # Preparar el contexto para el modelo si hay géneros
     if intents:
         genres_text = ", ".join(session["profile"]["favorite_movie_genres"])
-        print("genres_text")
-        print(genres_text)
         profile_context = f"Recomendar películas de los siguientes géneros o tambien llamado perfil del usuario: {genres_text}."
     else:
         profile_context = "Recomendaciones de películas."
 
     # Agregar un intent para enviar un mensaje
     intents["Enviar"] = request.form.get("message")
-    print("user.messages")
-    print(user.messages)
 
     if request.method == "GET":
         # Pasar los intents al template para que se muestren como botones
@@ -88,8 +82,6 @@ def chat():
         # Guardar nuevo mensaje en la base de datos
         db.session.add(Message(content=user_message, author="user", user=user))
         db.session.commit()
-        print("profile_context")
-        print(profile_context)
         # Preparar los mensajes para el LLM (modelo de lenguaje)
         messages_for_llm = [
             {

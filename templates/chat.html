@@ -27,7 +27,7 @@
 </div>
 
 <!-- Added a spacer div to account for fixed header height -->
-<div style="height: 60px;"></div>
+<div style="height: 80px;"></div>
 
 <div class="container chat-container col-xxl-8 px-4 py-5">
     <!-- Sección de mensajes -->
@@ -47,6 +47,16 @@
                     </div>
                 </div>
             {% endif %}
+        {% endfor %}
+    </div>
+      <!-- Mostrar los intents siempre -->
+      <div class="d-flex flex-wrap mb-4 pt-2" style="padding-top: 10px;">
+        {% for intent, message in intents.items() %}
+            <form method="POST" class="me-2 mb-2">
+                <button class="btn btn-primary" type="submit" name="intent" value="{{ intent }}">
+                    {{ intent }}
+                </button>
+            </form>
         {% endfor %}
     </div>
     <!-- Formulario de entrada de mensaje -->
