@@ -64,9 +64,9 @@ def chat():
     # Preparar el contexto para el modelo si hay géneros
     if intents:
         genres_text = ", ".join(session["profile"]["favorite_movie_genres"])
-        profile_context = (
-            f"Recomendar películas de los siguientes géneros: {genres_text}."
-        )
+        print("genres_text")
+        print(genres_text)
+        profile_context = f"Recomendar películas de los siguientes géneros o tambien llamado perfil del usuario: {genres_text}."
     else:
         profile_context = "Recomendaciones de películas."
 
@@ -88,7 +88,8 @@ def chat():
         # Guardar nuevo mensaje en la base de datos
         db.session.add(Message(content=user_message, author="user", user=user))
         db.session.commit()
-
+        print("profile_context")
+        print(profile_context)
         # Preparar los mensajes para el LLM (modelo de lenguaje)
         messages_for_llm = [
             {
@@ -138,6 +139,7 @@ def recommend():
             "content": """
             Eres un chatbot que recomienda películas, te llamas iA MovieAssist. 
             Tu rol es responder recomendaciones de manera breve y concisa. No repitas recomendaciones.
+            ademas debes considerar las preferencias del perfil del usuarios que tambien se pueden llamar generos de peliculas
             """,
         }
     ]
@@ -182,15 +184,3 @@ def editar_perfil():
         return redirect(url_for("editar_perfil"))  # Redirigir a la página de perfil
 
     return render_template("editar_perfil.html", profile=profile)
-
-
-@app.route("/logout", methods=["GET", "POST"])
-def logout():
-    # Limpiar las variables de sesión
-    session.clear()
-
-    # Mensaje opcional para indicar que se cerró la sesión correctamente
-    flash("Sesión cerrada correctamente.", "info")
-
-    # Redirigir al usuario a la página de inicio de sesión
-    return redirect(url_for("login"))

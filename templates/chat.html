@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    iA MovieAssist
+    Chat con iA MovieAssist
 {% endblock %}
 
 {% block content %}
-<!-- Encabezado fijo -->
+
 <div class="fixed-top bg-primary text-white py-3 px-4" style="z-index: 1030;">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
@@ -14,7 +14,7 @@
                 <button class="btn btn-light" onclick="window.location.href='{{ url_for('editar_perfil') }}'">
                     Editar perfil
                 </button>
-             </div>
+            </div>
         </div>
         
         <!-- Variables de sesión -->
@@ -22,44 +22,42 @@
             <p class="small mb-0">
                 Preferencias: <strong>{{ session['profile']['favorite_movie_genres'] | join(', ') }}</strong>
             </p>
-         </div>
+        </div>
     </div>
 </div>
-<div class="container col-xxl-8 px-4 py-5">
-    {% for message in messages %}
-        {% if message.author == 'assistant' %}
-            <div class="d-flex flex-row justify-content-start mb-4">
-                <img class="bg-white" src="{{ url_for('static', filename='avatar.png') }}" alt="avatar 1" style="width: 60px; height: 100%;">
-                <div class="p-3 ms-3" style="border-radius: 15px; ">
-                    <p class="small mb-0  text-primary">{{message.content}}</p>
+
+<!-- Added a spacer div to account for fixed header height -->
+<div style="height: 60px;"></div>
+
+<div class="container chat-container col-xxl-8 px-4 py-5">
+    <!-- Sección de mensajes -->
+    <div class="messages-section mb-5">
+        {% for message in messages %}
+            {% if message.author == 'assistant' %}
+                <div class="d-flex flex-row justify-content-start mb-4">
+                    <img class="bg-white" src="{{ url_for('static', filename='avatar.png') }}" alt="avatar 1" style="width: 60px; height: 100%;">
+                    <div class="p-3 ms-3 message-box assistant-message">
+                        <p class="small mb-0 text-primary">{{message.content}}</p>
+                    </div>
                 </div>
-            </div>
-        {% else %}
-            <div class="d-flex flex-row justify-content-end mb-4">
-                <div class="p-3 me-3 border text-info" style="border-radius: 15px;">
-                    <p class="small mb-0">{{message.content}}</p>
+            {% else %}
+                <div class="d-flex flex-row justify-content-end mb-4">
+                    <div class="p-3 me-3 message-box user-message">
+                        <p class="small mb-0 text-info">{{message.content}}</p>
+                    </div>
                 </div>
-          </div>
-        {% endif %}
-    {% endfor %}
-    <!-- Mostrar los intents siempre -->
-    <div class="d-flex flex-wrap mb-4 pt-2" style="padding-top: 10px;">
-        {% for intent, message in intents.items() %}
-            <form method="POST" class="me-2 mb-2">
-                <button class="btn btn-primary" type="submit" name="intent" value="{{ intent }}">
-                    {{ intent }}
-                </button>
-            </form>
+            {% endif %}
         {% endfor %}
     </div>
-
-   <form method="POST">
-        <div class="input-group mb-3">
-            <input name="message" required="required" class="form-control" placeholder="Enviar mensaje MovieAssist" aria-label="Tu mensaje" aria-describedby="send-message"/>
-            <input type="submit" class="btn btn-primary" id="send-message" name="intent" value="Enviar"/>
-        </div>
-    </form>
+    <!-- Formulario de entrada de mensaje -->
+    <div class="message-input-container">
+        <form method="POST">
+            <div class="input-group mb-3">
+                <input name="message" required="required" class="form-control" placeholder="Enviar mensaje MovieAssist" aria-label="Tu mensaje" aria-describedby="send-message"/>
+                <input type="submit" class="btn btn-primary" id="send-message" name="intent" value="Enviar"/>
+            </div>
+        </form>
+    </div>
 </div>
-
-
 {% endblock %}
+

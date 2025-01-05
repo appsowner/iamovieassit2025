@@ -23,7 +23,7 @@ class User(db.Model):
     is_admin = Column(Boolean, default=False)
     rol = Column(String, default="User")
 
-    messages = relationship("Message", back_populates="user")
+    messages = relationship("Message", back_populates="user", order_by="Message.id")
     profile = relationship("Profile", back_populates="user", uselist=False)
 
 
