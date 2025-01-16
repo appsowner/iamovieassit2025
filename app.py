@@ -231,7 +231,7 @@ def recommend():
         {
             "role": "system",
             "content": """
-            Eres un chatbot que recomienda películas, te llamas iA MovieAssist. 
+            Eres un chatbot que recomienda películas, te llamas iA FilamDORA. 
             Tu rol es responder recomendaciones de manera breve y concisa. No repitas recomendaciones.
             ademas debes considerar las preferencias del perfil del usuarios que tambien se pueden llamar generos de peliculas
             """,
@@ -298,7 +298,7 @@ def sign_up():
                 favorite_movie_genres=["terror", "ciencia ficcion", "comedia"],
             )
             message = Message(
-                content="Hola! Soy iA MovieAssist, IA que te ayuda a encontrar y recomendar las mejores peliculas. ¿En qué te puedo ayudar?",
+                content="Hola! Soy iA FilamDORA, IA que te ayuda a encontrar y recomendar las mejores peliculas. ¿En qué te puedo ayudar?",
                 author="assistant",
                 user=user,
             )
