@@ -10,6 +10,17 @@
             <!-- Contenedor de bienvenida -->
             <div class="p-5 border rounded shadow-sm bg-light">
                 <h2 class="h1 text-center text-primary mb-5">iA MovieAssist</h2>
+                  <!-- Mensajes flash -->
+                  {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                      <ul>
+                          {% for category, message in messages %}
+                              <li class="alert alert-danger">{{ message }}</li>
+                          {% endfor %}
+                      </ul>
+                  {% endif %}
+              {% endwith %}
+
                 {% if error %}
                 <div class="alert alert-danger">{{ error }}</div>
                 {% endif %}

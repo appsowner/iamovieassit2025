@@ -10,6 +10,16 @@
     <form method="POST" action="{{ url_for('editar_perfil') }}">
      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <label class="form-label">Géneros de películas favoritos</label>
+            <!-- Mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul>
+                    {% for category, message in messages %}
+                        <li class="alert alert-danger">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
     <div class="form-check">
         <input class="form-check-input" type="checkbox" id="genre_action" name="favorite_movie_genres" value="Acción" {% if "Acción" in profile.favorite_movie_genres %}checked{% endif %}>
         <label class="form-check-label" for="genre_action">Acción</label>
