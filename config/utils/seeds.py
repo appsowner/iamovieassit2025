@@ -8,7 +8,13 @@ with app.app_context():
 
     db.create_all()
 
-    user = User(email="carl.sanchez@guc.cl", is_active=True, is_admin=True, rol="Admin")
+    user = User(
+        email="carl.sanchez@guc.cl",
+        is_active=True,
+        is_admin=True,
+        rol="Admin",
+        password_hash="ssdksjklsdjlksdj",
+    )
 
     # Crear perfil asociado
     profile = Profile(

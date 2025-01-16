@@ -1,4 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    jsonify,
+)
 import os
 import pandas as pd
 from flask_bootstrap import Bootstrap5
@@ -6,15 +15,84 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from config.db.db import db_config, db
 from config.models.models import User, Message, Profile
+import json
+
+from forms import ProfileForm, SignUpForm, LoginForm
+from flask_wtf.csrf import CSRFProtect
+from bot import search_movie_or_tv_show, where_to_watch
+from flask_login import (
+    LoginManager,
+    login_required,
+    login_user,
+    current_user,
+    logout_user,
+)
+from flask_bcrypt import Bcrypt
+from flask import redirect, url_for
+from langsmith.wrappers import wrap_openai
 
 
 load_dotenv()
 
+
+login_manager = LoginManager()
+login_manager.login_view = "login"
+login_manager.login_message = "Inicia sesión para continuar"
+client = wrap_openai(OpenAI())
 client = OpenAI()
 app = Flask(__name__)
+csrf = CSRFProtect(app)
+login_manager.init_app(app)
+bcrypt = Bcrypt(app)
+
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default_key")
 bootstrap = Bootstrap5(app)
 db_config(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "where_to_watch",
+            "description": "Returns a list of platforms where a specified movie can be watched.",
+            "parameters": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the movie to search for",
+                    }
+                },
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_movie_or_tv_show",
+            "description": "Returns information about a specified movie or TV show.",
+            "parameters": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the movie/tv show to search for",
+                    }
+                },
+                "additionalProperties": False,
+            },
+        },
+    },
+]
 
 
 @app.errorhandler(403)
@@ -29,29 +107,30 @@ def home():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    error = None
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-        session["user_id"] = 1
-        print("session")
-        print(session["user_id"])
+    form = LoginForm()
 
-        # Cargar el perfil del usuario en la sesión
-        profile = Profile.query.filter_by(user_id=session["user_id"]).first()
-        Profile.query.filter_by(user_id=session["user_id"]).first()
-        session["profile"] = {"favorite_movie_genres": profile.favorite_movie_genres}
-        print("session[profile]")
-        print(session["profile"])
-    return redirect("/chat")
+    if request.method == "POST":
+        if form.validate_on_submit():
+            email = form.email.data
+            password = form.password.data
+            user = db.session.query(User).filter_by(email=email).first()
+            if user and bcrypt.check_password_hash(user.password_hash, password):
+                login_user(user)
+                return redirect("chat")
+
+            flash("El correo o la contraseña es incorrecta.", "error")
+
+    return render_template("index.html", form=form)
 
 
 @app.route("/chat", methods=["GET", "POST"])
+@login_required
 def chat():
     # Obtener el usuario
-    user = db.session.query(User).first()
+    user = db.session.query(User).get(current_user.id)
+
     # Cargar el perfil del usuario en la sesión
-    profile = Profile.query.filter_by(user_id=session["user_id"]).first()
+    profile = Profile.query.filter_by(user_id=user.id).first()
     session["profile"] = {"favorite_movie_genres": profile.favorite_movie_genres}
     intents = {}
 
@@ -83,34 +162,57 @@ def chat():
         db.session.add(Message(content=user_message, author="user", user=user))
         db.session.commit()
         # Preparar los mensajes para el LLM (modelo de lenguaje)
-        messages_for_llm = [
+    messages_for_llm = [
+        {
+            "role": "system",
+            "content": profile_context,
+        }
+    ]
+
+    # Añadir los mensajes del chat
+    for message in user.messages:
+        messages_for_llm.append(
             {
-                "role": "system",
-                "content": profile_context,
+                "role": message.author,
+                "content": message.content,
             }
-        ]
-
-        # Añadir los mensajes del chat
-        for message in user.messages:
-            messages_for_llm.append(
-                {
-                    "role": message.author,
-                    "content": message.content,
-                }
-            )
-
-        # Llamar al modelo para generar una recomendación
-        chat_completion = client.chat.completions.create(
-            messages=messages_for_llm, model="gpt-4o", temperature=1
         )
 
+    # Llamar al modelo para generar una recomendación
+    chat_completion = client.chat.completions.create(
+        messages=messages_for_llm,
+        model="gpt-4o",
+        temperature=1,
+        tools=tools,
+    )
+    if chat_completion.choices[0].message.tool_calls:
+        tool_call = chat_completion.choices[0].message.tool_calls[0]
+
+        if tool_call.function.name == "where_to_watch":
+            arguments = json.loads(tool_call.function.arguments)
+            name = arguments["name"]
+            model_recommendation = where_to_watch(client, name, user)
+        elif tool_call.function.name == "search_movie_or_tv_show":
+            arguments = json.loads(tool_call.function.arguments)
+            name = arguments["name"]
+            model_recommendation = search_movie_or_tv_show(client, name, user)
+    else:
         model_recommendation = chat_completion.choices[0].message.content
 
+        # model_recommendation = chat_completion.choices[0].message.content
+
         # Guardar la respuesta del modelo (asistente) en la base de datos
-        db.session.add(
-            Message(content=model_recommendation, author="assistant", user=user)
+    db.session.add(Message(content=model_recommendation, author="assistant", user=user))
+    db.session.commit()
+    accept_header = request.headers.get("Accept")
+    if accept_header and "application/json" in accept_header:
+        last_message = user.messages[-1]
+        return jsonify(
+            {
+                "author": last_message.author,
+                "content": last_message.content,
+            }
         )
-        db.session.commit()
 
     # Renderizar la plantilla con los nuevos mensajes
     return render_template("chat.html", messages=user.messages, intents=intents)
@@ -159,8 +261,9 @@ def recommend():
 
 @app.route("/editar-perfil", methods=["GET", "POST"])
 def editar_perfil():
-    # Obtener el perfil del usuario (esto depende de tu implementación)
-    profile = db.session.query(Profile).first()
+    user = db.session.query(User).get(current_user.id)
+    # Cargar el perfil del usuario en la sesión
+    profile = Profile.query.filter_by(user_id=user.id).first()
 
     if request.method == "POST":
         # Obtener los valores del formulario
@@ -176,3 +279,38 @@ def editar_perfil():
         return redirect(url_for("editar_perfil"))  # Redirigir a la página de perfil
 
     return render_template("editar_perfil.html", profile=profile)
+
+
+@app.route("/sign-up", methods=["GET", "POST"])
+def sign_up():
+    form = SignUpForm()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            email = form.email.data
+            password = form.password.data
+            user = User(
+                email=email,
+                password_hash=bcrypt.generate_password_hash(password).decode("utf-8"),
+            )
+            db.session.add(user)
+            profile = Profile(
+                user=user,
+                favorite_movie_genres=["terror", "ciencia ficcion", "comedia"],
+            )
+            message = Message(
+                content="Hola! Soy iA MovieAssist, IA que te ayuda a encontrar y recomendar las mejores peliculas. ¿En qué te puedo ayudar?",
+                author="assistant",
+                user=user,
+            )
+            db.session.add(profile)
+            db.session.add(message)
+            db.session.commit()
+            login_user(user)
+            return redirect(url_for("chat"))
+    return render_template("sign-up.html", form=form)
+
+
+@app.get("/logout")
+def logout():
+    logout_user()
+    return redirect("/")

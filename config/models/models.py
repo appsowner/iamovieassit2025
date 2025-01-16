@@ -11,9 +11,10 @@ from sqlalchemy import (
     JSON,
 )
 from datetime import datetime
+from flask_login import UserMixin
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -22,6 +23,7 @@ class User(db.Model):
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     rol = Column(String, default="User")
+    password_hash = Column(String, nullable=False)
 
     messages = relationship("Message", back_populates="user", order_by="Message.id")
     profile = relationship("Profile", back_populates="user", uselist=False)

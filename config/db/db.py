@@ -21,6 +21,6 @@ def db_config(app):
     DB_NAME = os.environ.get("DB_NAME")
 
     print(f"{DB_USER}-{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
-    db_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?client_encoding=utf8"
+    db_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     db.init_app(app)
