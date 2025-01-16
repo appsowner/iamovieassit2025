@@ -16,6 +16,7 @@
 
                 <!-- Formulario de login -->
                 <form action="/login" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="form-group mb-3">
                         <label class="h6 text-info" for="email">Correo Electrónico</label>
                         <input type="email" class="form-control" id="email" name="email" required placeholder="Ingresa tu correo electrónico">

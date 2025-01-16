@@ -8,6 +8,7 @@
     <h2>Editar Perfil</h2>
     
     <form method="POST" action="{{ url_for('editar_perfil') }}">
+     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <label class="form-label">Géneros de películas favoritos</label>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" id="genre_action" name="favorite_movie_genres" value="Acción" {% if "Acción" in profile.favorite_movie_genres %}checked{% endif %}>
